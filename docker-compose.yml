@@ -8,6 +8,12 @@ services:
     networks:
       - webnet
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Servidor Web 2
   server2:
@@ -16,6 +22,12 @@ services:
     networks:
       - webnet
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Balanceador de Carga (Nginx)
   load_balancer:
@@ -26,11 +38,18 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - server1
-      - server2
+      server1:
+        condition: service_healthy
+      server2:
+        condition: service_healthy
     networks:
       - webnet
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   webnet:
